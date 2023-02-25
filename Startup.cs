@@ -50,13 +50,6 @@ namespace Bot.Api
             // Add the UserState singleton.
             services.AddSingleton<UserState>();
 
-            // Configure the Bot Endpoint
-            services.AddBot<Bot>(options =>
-            {
-                options.CredentialProvider = new SimpleCredentialProvider(Configuration["MicrosoftAppId"], Configuration["MicrosoftAppPassword"]);
-                options.Middleware.Add(new ActivityLogMiddleware());
-            });
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
