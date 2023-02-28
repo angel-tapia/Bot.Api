@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="4.19.2" />
     <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.19.2" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.19.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
 
     <ItemGroup>

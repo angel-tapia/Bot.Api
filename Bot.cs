@@ -26,6 +26,8 @@ namespace Bot.Api
             // Adding the dialogs to the DialogSet.
             _dialogSet.Add(new RootDialog(_conversationState));
             _dialogSet.Add(new ObtenerSaldoPresupuestalDialog());
+            _dialogSet.Add(new ObtenerCeCoDialog());
+            _dialogSet.Add(new ObtenerSociedadDialog());
         }
 
 
