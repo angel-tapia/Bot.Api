@@ -73,7 +73,7 @@ namespace Bot.Api
             // Get the ConversationState singleton.
             var conversationState = app.ApplicationServices.GetService<ConversationState>();
 
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
         }
     }
 }
