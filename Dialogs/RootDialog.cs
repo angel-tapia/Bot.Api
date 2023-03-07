@@ -8,6 +8,7 @@ using Azure.Core;
 using Azure;
 using Azure.AI.Language.Conversations;
 using System.Text.Json;
+using AdaptiveExpressions;
 
 namespace Bot.Api.Dialogs
 {
@@ -26,7 +27,8 @@ namespace Bot.Api.Dialogs
 
         
         private async Task<DialogTurnResult> GetCluIntent(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
+        {   
+            // Use the CLU service
             Uri endpoint = new Uri("https://acnaclu.cognitiveservices.azure.com/");
             AzureKeyCredential credential = new AzureKeyCredential("7147a03774cb479cafd922b253ec26e3");
 
@@ -64,8 +66,6 @@ namespace Bot.Api.Dialogs
             //The top intent
             var intent = conversationPrediction.GetProperty("topIntent").GetString();
 
-            await stepContext.Context.SendActivityAsync($"The top intent detected is: {intent}", cancellationToken: cancellationToken);
-
             await stepContext.NextAsync(intent, cancellationToken);
 
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
@@ -74,14 +74,20 @@ namespace Bot.Api.Dialogs
         private Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string intent = stepContext.Result as string;
-
+            
             switch (intent)
             {
                 case "ObtenerSaldoPresup":
+                case "1":
+                    stepContext.Context.SendActivityAsync(intent);
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerSaldoPresupuestalDialog), cancellationToken: cancellationToken);
                 case "ObtenerCeCo":
+                case "2":
+                    stepContext.Context.SendActivityAsync(intent);
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerCeCoDialog), cancellationToken: cancellationToken);
                 case "ObtenerSociedad":
+                case "3":
+                    stepContext.Context.SendActivityAsync(intent);
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerSociedadDialog), cancellationToken: cancellationToken);
                 default:
                     throw new NotImplementedException();

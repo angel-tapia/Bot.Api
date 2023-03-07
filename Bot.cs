@@ -43,26 +43,26 @@ namespace Bot.Api
             {
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Bienvenido al Chatbot de Presupuestos!\n"), cancellationToken);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Escoja alguna opción que quiera preguntar o escriba su pregunta\n 1. Saber tu saldo presupuestal\n O escribe tu pregunta que tengas =)"), cancellationToken);
-
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal!</b>"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Elije una opción o escribe tu pregunta"), cancellationToken);
+                    var card = new HeroCard
+                    {
+                        Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
+                        Buttons = new List<CardAction>
+                        {
+                            new CardAction(ActionTypes.ImBack, title: "1) Consultar tu saldo presupuestal", value: "1"),
+                            new CardAction(ActionTypes.ImBack, title: "2) Consulta tu Centro de Costos (CeCo) correspondiente", value: "2"),
+                            new CardAction(ActionTypes.ImBack, title: "3) Checa la sociedad que corrrespondes", value: "3")
+                        }
+                    };
+                    await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Or write your own question =)"), cancellationToken);
                 }
             }
         }
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            /*
-            var messageText = turnContext.Activity.Text;
-            await turnContext.SendActivityAsync(MessageFactory.Text($"Dijiste: {messageText}"), cancellationToken);
-            */
-            var messageText = turnContext.Activity.Text;
-            if(messageText == "tengo una duda")
-            {
-                await turnContext.SendActivityAsync(MessageFactory.Text($"Cual es tu duda?"), cancellationToken);
-            }
-            
-
             var dialogContext = await _dialogSet.CreateContextAsync(turnContext, cancellationToken);
 
             // Verify the user authentication
