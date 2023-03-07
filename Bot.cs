@@ -56,7 +56,7 @@ namespace Bot.Api
                         }
                     };
                     await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Or write your own question =)"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"O escribe tu propia pregunta =)"), cancellationToken);
                 }
             }
         }

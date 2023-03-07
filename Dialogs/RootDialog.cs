@@ -78,16 +78,10 @@ namespace Bot.Api.Dialogs
             switch (intent)
             {
                 case "ObtenerSaldoPresup":
-                case "1":
-                    stepContext.Context.SendActivityAsync(intent);
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerSaldoPresupuestalDialog), cancellationToken: cancellationToken);
                 case "ObtenerCeCo":
-                case "2":
-                    stepContext.Context.SendActivityAsync(intent);
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerCeCoDialog), cancellationToken: cancellationToken);
                 case "ObtenerSociedad":
-                case "3":
-                    stepContext.Context.SendActivityAsync(intent);
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerSociedadDialog), cancellationToken: cancellationToken);
                 default:
                     throw new NotImplementedException();

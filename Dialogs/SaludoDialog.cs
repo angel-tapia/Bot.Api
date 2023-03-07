@@ -1,20 +1,27 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using static Antlr4.Runtime.Atn.SemanticContext;
 
 namespace Bot.Api.Dialogs
 {
-    public class ObtenerSociedadDialog : ComponentDialog
+    public class SaludoDialog : ComponentDialog
     {
-        public ObtenerSociedadDialog() : base(nameof(ObtenerSociedadDialog))
+        public SaludoDialog() : base(nameof(SaludoDialog))
         {
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
-                PromptForSociedadAsync,
-                DisplaySociedadAsync
+                SaludoAsync
             }));
+
+        }
+
+        private async Task<DialogTurnResult> SaludoAsync(WaterfallStepContext dialog, CancellationToken cancellationToken)
+        {
+            await dialog.Context.SendActivityAsync(MessageFactory.Text($"Hola! Estoy feliz por ayudarte, escribe tu pregunta o seleccionala del menu de arriba para que comencemos ;)"), cancellationToken);
+            return await dialog.EndDialogAsync(cancellationToken: cancellationToken);
         }
 
         private static async Task<DialogTurnResult> PromptForSociedadAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -26,16 +33,6 @@ namespace Bot.Api.Dialogs
             };
 
             return await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
-        }
-
-        private static async Task<DialogTurnResult> DisplaySociedadAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            // Display the sociedad name to the user
-            var sociedad = stepContext.Result.ToString();
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"La sociedad que ingresaste es: {sociedad}"), cancellationToken);
-
-            // End the dialog
-            return await stepContext.EndDialogAsync(null, cancellationToken);
         }
     }
 }
