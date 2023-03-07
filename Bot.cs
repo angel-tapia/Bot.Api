@@ -50,9 +50,9 @@ namespace Bot.Api
                         Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                         Buttons = new List<CardAction>
                         {
-                            new CardAction(ActionTypes.ImBack, title: "1) Consultar tu saldo presupuestal", value: "1"),
-                            new CardAction(ActionTypes.ImBack, title: "2) Consulta tu Centro de Costos (CeCo) correspondiente", value: "2"),
-                            new CardAction(ActionTypes.ImBack, title: "3) Checa la sociedad que corrrespondes", value: "3")
+                            new CardAction(ActionTypes.ImBack, title: "1) Consultar tu saldo presupuestal", value: "Consulta saldo presupuestal"),
+                            new CardAction(ActionTypes.ImBack, title: "2) Consulta tu Centro de Costos (CeCo) correspondiente", value: "Consulta centro de costos"),
+                            new CardAction(ActionTypes.ImBack, title: "3) Checa la sociedad que corrrespondes", value: "¿Qué sociedad pertenezco?")
                         }
                     };
                     await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
