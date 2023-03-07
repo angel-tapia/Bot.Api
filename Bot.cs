@@ -28,6 +28,7 @@ namespace Bot.Api
             _dialogSet.Add(new ObtenerSaldoPresupuestalDialog());
             _dialogSet.Add(new ObtenerCeCoDialog());
             _dialogSet.Add(new ObtenerSociedadDialog());
+            _dialogSet.Add(new SaludoDialog());
         }
 
 

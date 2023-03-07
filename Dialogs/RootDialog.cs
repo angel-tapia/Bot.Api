@@ -74,7 +74,7 @@ namespace Bot.Api.Dialogs
         private Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string intent = stepContext.Result as string;
-            
+
             switch (intent)
             {
                 case "ObtenerSaldoPresup":
@@ -83,6 +83,8 @@ namespace Bot.Api.Dialogs
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerCeCoDialog), cancellationToken: cancellationToken);
                 case "ObtenerSociedad":
                     return stepContext.ReplaceDialogAsync(nameof(ObtenerSociedadDialog), cancellationToken: cancellationToken);
+                case "Saludo":
+                    return stepContext.ReplaceDialogAsync(nameof(SaludoDialog), cancellationToken: cancellationToken);
                 default:
                     throw new NotImplementedException();
             }
