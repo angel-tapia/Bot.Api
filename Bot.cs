@@ -52,12 +52,13 @@ namespace Bot.Api
                         Buttons = new List<CardAction>
                         {
                             new CardAction(ActionTypes.ImBack, title: "1) Consultar tu saldo presupuestal", value: "Consulta saldo presupuestal"),
-                            new CardAction(ActionTypes.ImBack, title: "2) Consulta tu Centro de Costos (CeCo) correspondiente", value: "Consulta centro de costos"),
-                            new CardAction(ActionTypes.ImBack, title: "3) Checa la sociedad que corrrespondes", value: "¿Qué sociedad pertenezco?")
+                            new CardAction(ActionTypes.ImBack, title: "2) Solicitud de Traspaso", value: "Tengo una solicitud de traspaso"),
+                            new CardAction(ActionTypes.ImBack, title: "3) FAQs (Preguntas frecuentes)", value: "Muestrame las preguntas frecuentes"),
+                            new CardAction(ActionTypes.ImBack, title: "4) Solicitar Reporte Power BI", value: "Solicito un reporte Power BI")
                         }
                     };
                     await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"O escribe tu propia pregunta =)"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"O escribe tu propia pregunta =), solo está implementada la intención Consultar tu saldo presupuestal, después se implementan las otras, igual con sus subopciones"), cancellationToken);
                 }
             }
         }
