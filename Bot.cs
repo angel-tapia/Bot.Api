@@ -58,7 +58,7 @@ namespace Bot.Api
                         }
                     };
                     await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"O escribe tu propia pregunta =), solo está implementada la intención Consultar tu saldo presupuestal, después se implementan las otras, igual con sus subopciones"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"O escribe tu propia pregunta =), solo está implementada la intención Consultar tu saldo presupuestal"), cancellationToken);
                 }
             }
         }
