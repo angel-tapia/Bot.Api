@@ -3,6 +3,7 @@
 
 using Bot.Api.Dialogs;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using System.Collections.Generic;
@@ -44,7 +45,13 @@ namespace Bot.Api
             {
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal!</b>"), cancellationToken);
+                    var user = await TeamsInfo.GetMemberAsync(turnContext, member.Id, cancellationToken);
+                    var name = user.Name;
+                    if (name == null)
+                    {
+                        name = "Angel";
+                    }
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {name}</b>"), cancellationToken);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Elije una opción o escribe tu pregunta"), cancellationToken);
                     var card = new HeroCard
                     {
@@ -80,7 +87,7 @@ namespace Bot.Api
 
             // Save any state changes that might have occurred during the turn.
             await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
-            await _userState.SaveChangesAsync(turnContext, false, cancellationToken);
+            await _userState.SaveChangesAsync(turnContext, false, cancellationToken); 
             
         }
     }
