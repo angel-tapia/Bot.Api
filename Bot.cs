@@ -47,11 +47,11 @@ namespace Bot.Api
                 {
                     var user = await TeamsInfo.GetMemberAsync(turnContext, member.Id, cancellationToken);
                     var name = user.Name;
-                    if (name == null)
-                    {
-                        name = "Angel";
-                    }
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {name}</b>"), cancellationToken);
+                    string[] parts = name.Split(new char[] { ' ' });
+                    string firstName = parts[2];
+                    firstName = firstName.Substring(0, 1).ToUpper() + firstName.Substring(1).ToLower();
+
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {firstName}!</b>"), cancellationToken);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Elije una opción o escribe tu pregunta"), cancellationToken);
                     var card = new HeroCard
                     {
