@@ -24,15 +24,6 @@ namespace Bot.Api.Dialogs
             return await dialog.EndDialogAsync(cancellationToken: cancellationToken);
         }
 
-        private static async Task<DialogTurnResult> PromptForSociedadAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            // Prompt the user to provide the sociedad name
-            var promptOptions = new PromptOptions
-            {
-                Prompt = MessageFactory.Text("Por favor, dime el nombre de la sociedad:")
-            };
-
-            return await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
-        }
+       
     }
 }

@@ -9,6 +9,8 @@ using Microsoft.Bot.Schema;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Bot.Api
 {
@@ -18,6 +20,11 @@ namespace Bot.Api
         private readonly DialogSet _dialogSet;
         private readonly BotState _userState;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Bot"/> class.
+        /// </summary>
+        /// <param name="userState">The user state.</param>
+        /// <param name="conversationState">The conversation state.</param>
         public Bot(UserState userState, ConversationState conversationState)
         {
             _userState = userState;
@@ -27,12 +34,19 @@ namespace Bot.Api
             // Adding the dialogs to the DialogSet.
             _dialogSet.Add(new RootDialog(_conversationState));
             _dialogSet.Add(new ObtenerSaldoPresupuestalDialog());
-            _dialogSet.Add(new ObtenerCeCoDialog());
-            _dialogSet.Add(new ObtenerSociedadDialog());
+            _dialogSet.Add(new TraspasoDialog());
+            _dialogSet.Add(new FAQsDialog());
             _dialogSet.Add(new SaludoDialog());
+            _dialogSet.Add(new ImporteDisponibleLiberadoDialog());
+            _dialogSet.Add(new TextPrompt(nameof(TextPrompt)));
         }
 
 
+        /// <summary>
+        /// Called by the adapter at runtime to process an incoming activity, outgoing activity, or an update to a conversation's state.
+        /// </summary>
+        /// <param name="turnContext">The context object for this turn.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
         {
             await base.OnTurnAsync(turnContext, cancellationToken);
@@ -45,13 +59,23 @@ namespace Bot.Api
             {
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    var user = await TeamsInfo.GetMemberAsync(turnContext, member.Id, cancellationToken);
-                    var name = user.Name;
-                    string[] parts = name.Split(new char[] { ' ' });
-                    string firstName = parts[2];
-                    firstName = firstName.Substring(0, 1).ToUpper() + firstName.Substring(1).ToLower();
+                    // Welcome the user using their first name
+                    try
+                    {
+                        var user = await TeamsInfo.GetMemberAsync(turnContext, member.Id, cancellationToken);
+                        var name = user.Name;
+                        string[] parts = name.Split(new char[] { ' ' });
+                        string firstName = parts[2];
+                        firstName = firstName.Substring(0, 1).ToUpper() + firstName.Substring(1).ToLower();
 
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {firstName}!</b>"), cancellationToken);
+                        await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {firstName}!</b>"), cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        await turnContext.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
+                    }
+
+                    // Deploy a option's list to select or write the question
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Elije una opción o escribe tu pregunta"), cancellationToken);
                     var card = new HeroCard
                     {
@@ -66,16 +90,22 @@ namespace Bot.Api
                     };
                     await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"O escribe tu propia pregunta =), solo está implementada la intención Consultar tu saldo presupuestal"), cancellationToken);
+
+                    // Verify the user authentication
+
                 }
             }
         }
 
+        /// <summary>
+        /// Overrides the OnMessageActivityAsync method to handle incoming messages.
+        /// </summary>
+        /// <param name="turnContext">The context object for this turn.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             var dialogContext = await _dialogSet.CreateContextAsync(turnContext, cancellationToken);
-
-            // Verify the user authentication
-            
 
             // Use the DialogSet to start the dialog if it hasn't started yet.
             var result = await dialogContext.ContinueDialogAsync(cancellationToken);
@@ -87,8 +117,7 @@ namespace Bot.Api
 
             // Save any state changes that might have occurred during the turn.
             await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
-            await _userState.SaveChangesAsync(turnContext, false, cancellationToken); 
-            
+            await _userState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
     }
 }

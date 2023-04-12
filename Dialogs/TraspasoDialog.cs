@@ -7,9 +7,9 @@ using Microsoft.Bot.Builder;
 
 namespace Bot.Api.Dialogs
 {
-    public class ObtenerCeCoDialog : ComponentDialog
+    public class TraspasoDialog : ComponentDialog
     {
-        public ObtenerCeCoDialog() : base(nameof(ObtenerCeCoDialog))
+        public TraspasoDialog() : base(nameof(TraspasoDialog))
         {
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {

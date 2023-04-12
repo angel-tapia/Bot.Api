@@ -6,9 +6,9 @@ using static Antlr4.Runtime.Atn.SemanticContext;
 
 namespace Bot.Api.Dialogs
 {
-    public class ObtenerSociedadDialog : ComponentDialog
+    public class FAQsDialog : ComponentDialog
     {
-        public ObtenerSociedadDialog() : base(nameof(ObtenerSociedadDialog))
+        public FAQsDialog() : base(nameof(FAQsDialog))
         {
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {

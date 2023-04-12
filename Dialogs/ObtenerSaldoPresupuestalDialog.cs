@@ -32,10 +32,10 @@ namespace Bot.Api.Dialogs
                 Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                 Buttons = new List<CardAction>
         {
-            new CardAction(ActionTypes.ImBack, title: "1) Importe disponible (liberado)", value: "Importe disponible (liberado)"),
+            new CardAction(ActionTypes.ImBack, title: "1) Importe disponible (liberado)", value: "ImporteDisponibleLiberado"),
             new CardAction(ActionTypes.ImBack, title: "2) Anual", value: "Anual"),
-            new CardAction(ActionTypes.ImBack, title: "3) Disponible al momento", value: "Disponible al momento"),
-            new CardAction(ActionTypes.ImBack, title: "4) Gastado total", value: "Gastado total"),
+            new CardAction(ActionTypes.ImBack, title: "3) Disponible al momento", value: "DisponibleAlMomento"),
+            new CardAction(ActionTypes.ImBack, title: "4) Gastado total", value: "GastadoTotal"),
             new CardAction(ActionTypes.ImBack, title: "5) Comprometido", value: "Comprometido")
         }
             };
@@ -43,7 +43,8 @@ namespace Bot.Api.Dialogs
             await stepContext.Context.SendActivityAsync(MessageFactory.Text($"O escribe tu mismo el que quieras"), cancellationToken);
 
             // Wait for user input
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Esperando respuesta del usuario...") }, cancellationToken);
+
+            return await stepContext.ContinueDialogAsync(cancellationToken: cancellationToken);
         }
 
 
@@ -58,7 +59,7 @@ namespace Bot.Api.Dialogs
 
             ConversationAnalysisClient client = new ConversationAnalysisClient(endpoint, credential);
 
-            string projectName = "AC-NA-CLU";
+            string projectName = "AC-CLU-SP";
             string deploymentName = "Prueba";
 
             var data = new
@@ -90,9 +91,7 @@ namespace Bot.Api.Dialogs
             //The top intent
             var intent = conversationPrediction.GetProperty("topIntent").GetString();
 
-            await stepContext.NextAsync(intent, cancellationToken);
-
-            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+            return await stepContext.NextAsync(intent, cancellationToken);
         }
 
         private Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -101,7 +100,8 @@ namespace Bot.Api.Dialogs
 
             switch (intent)
             {
-                
+                case "ImporteDisponibleLiberado":
+                    return stepContext.ReplaceDialogAsync(nameof(ImporteDisponibleLiberadoDialog), cancellationToken: cancellationToken);
                 default:
                     throw new NotImplementedException();
             }
