@@ -19,33 +19,32 @@ namespace Bot.Api.Dialogs
                 End
             }));
         }
-        private Task<DialogTurnResult> ReadInfo(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> ReadInfo(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            stepContext.PromptAsync(
-             nameof(TextPrompt),
-             new PromptOptions { Prompt = MessageFactory.Text("Por favor ingresa la sociedad a la que perteneces.") },
-             cancellationToken);
+            // Prompt the user for the Society parameter
+            var options = new PromptOptions
+            {
+                Prompt = MessageFactory.Text("Por favor ingresa la sociedad a la que perteneces.")
+            };
+            var result = await stepContext.PromptAsync(nameof(TextPrompt), options, cancellationToken);
 
-            // Save the Society parameter in the stepContext.Values dictionary and prompt the user for the CeCo parameter
-            stepContext.Values["Society"] = (string)stepContext.Result;
+            // Save the Society parameter in the stepContext.Values dictionary
+            stepContext.Values["Society"] = result;
 
-            stepContext.PromptAsync(
-             nameof(TextPrompt),
-             new PromptOptions { Prompt = MessageFactory.Text("Por favor ingresa el CeCo al que perteneces.") },
-             cancellationToken);
+            // Prompt the user for the CeCo parameter
+            options.Prompt = MessageFactory.Text("Por favor ingresa el CeCo que quieres consultar.");
+            result = await stepContext.PromptAsync(nameof(TextPrompt), options, cancellationToken);
 
-            // Save the CeCo parameter in the stepContext.Values dictionary and prompt the user for the NumCuenta parameter
-            stepContext.Values["CeCo"] = (string)stepContext.Result;
+            // Save the CeCo parameter in the stepContext.Values dictionary
+            stepContext.Values["CeCo"] = result;
 
-            stepContext.PromptAsync(
-             nameof(TextPrompt),
-             new PromptOptions { Prompt = MessageFactory.Text("Por favor ingresa el numero de cuenta al que perteneces.") },
-             cancellationToken);
+            // Prompt the user for the NumCuenta parameter
+            options.Prompt = MessageFactory.Text("Por favor ingresa el numero de cuenta que quieres consultar.");
+            result = await stepContext.PromptAsync(nameof(TextPrompt), options, cancellationToken);
 
             // Save the NumCuenta parameter in the stepContext.Values dictionary and proceed to the next step in the waterfall
-            stepContext.Values["NumCuenta"] = (string)stepContext.Result;
-
-            return stepContext.NextAsync(cancellationToken: cancellationToken);
+            stepContext.Values["NumCuenta"] = result;
+            return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
 
