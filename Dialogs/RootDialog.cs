@@ -96,7 +96,7 @@ namespace Bot.Api.Dialogs
         /// </summary>
         /// <param name="stepContext">The context object that is passed to each step of a WaterfallDialog.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        private Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             // Get the user's intent from the step context.
             string intent = stepContext.Result as string;
@@ -105,13 +105,13 @@ namespace Bot.Api.Dialogs
             switch (intent)
             {
                 case "ObtenerSaldoPresup":
-                    return stepContext.ReplaceDialogAsync(nameof(ObtenerSaldoPresupuestalDialog), cancellationToken: cancellationToken);
+                    return await stepContext.ReplaceDialogAsync(nameof(ObtenerSaldoPresupuestalDialog), cancellationToken: cancellationToken);
                 case "ObtenerCeCo":
-                    return stepContext.ReplaceDialogAsync(nameof(TraspasoDialog), cancellationToken: cancellationToken);
+                    return await stepContext.ReplaceDialogAsync(nameof(TraspasoDialog), cancellationToken: cancellationToken);
                 case "ObtenerSociedad":
-                    return stepContext.ReplaceDialogAsync(nameof(FAQsDialog), cancellationToken: cancellationToken);
+                    return await stepContext.ReplaceDialogAsync(nameof(FAQsDialog), cancellationToken: cancellationToken);
                 case "Saludo":
-                    return stepContext.ReplaceDialogAsync(nameof(SaludoDialog), cancellationToken: cancellationToken);
+                    return await stepContext.ReplaceDialogAsync(nameof(SaludoDialog), cancellationToken: cancellationToken);
                     //return stepContext.EndDialogAsync();
                 default:
                     throw new NotImplementedException();

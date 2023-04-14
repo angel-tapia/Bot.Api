@@ -94,14 +94,14 @@ namespace Bot.Api.Dialogs
             return await stepContext.NextAsync(intent, cancellationToken);
         }
 
-        private Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> Redirect(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             string intent = stepContext.Result as string;
 
             switch (intent)
             {
                 case "ImporteDisponibleLiberado":
-                    return stepContext.ReplaceDialogAsync(nameof(ImporteDisponibleLiberadoDialog), cancellationToken: cancellationToken);
+                    return await stepContext.ReplaceDialogAsync(nameof(ImporteDisponibleLiberadoDialog), cancellationToken: cancellationToken);
                 default:
                     throw new NotImplementedException();
             }

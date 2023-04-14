@@ -4,7 +4,7 @@ using System.Threading;
 using System;
 using Bot.Api.Data;
 using Microsoft.Bot.Builder;
-
+using Microsoft.Bot.Schema;
 
 namespace Bot.Api.Dialogs
 {
@@ -19,6 +19,7 @@ namespace Bot.Api.Dialogs
                 End
             }));
         }
+
         private async Task<DialogTurnResult> ReadInfo(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             // Prompt the user for the Society parameter
