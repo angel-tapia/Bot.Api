@@ -44,7 +44,8 @@ namespace Bot.Api.Dialogs
 
             // Wait for user input
 
-            return await stepContext.ContinueDialogAsync(cancellationToken: cancellationToken);
+            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions(), cancellationToken);
+            //return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
 
