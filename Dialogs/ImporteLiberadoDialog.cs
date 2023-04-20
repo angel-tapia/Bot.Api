@@ -9,9 +9,9 @@ using AdaptiveCards;
 
 namespace Bot.Api.Dialogs
 {
-    public class ImporteDisponibleLiberadoDialog : ComponentDialog
+    public class ImporteLiberadoDialog : ComponentDialog
     {
-        public ImporteDisponibleLiberadoDialog() : base(nameof(ImporteDisponibleLiberadoDialog))
+        public ImporteLiberadoDialog() : base(nameof(ImporteLiberadoDialog))
         {
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
@@ -21,37 +21,6 @@ namespace Bot.Api.Dialogs
                 ShowUsers,
                 End
             }));
-        }
-
-        private async Task<DialogTurnResult> ReadInfo(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            var promptOptions = new PromptOptions
-            {
-                Prompt = MessageFactory.Text("Por favor ingresa la sociedad a la que perteneces.")
-            };
-
-            // Prompt the user for the Society parameter
-            var societyResult = await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
-
-            // Save the Society parameter in the stepContext.Values dictionary
-            stepContext.Values["Society"] = societyResult.Result;
-
-            promptOptions.Prompt = MessageFactory.Text("Por favor ingresa el CeCo que quieres consultar.");
-
-            // Prompt the user for the CeCo parameter
-            var cecoResult = await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
-
-            // Save the CeCo parameter in the stepContext.Values dictionary
-            stepContext.Values["CeCo"] = cecoResult.Result;
-
-            promptOptions.Prompt = MessageFactory.Text("Por favor ingresa el numero de cuenta que quieres consultar.");
-
-            // Prompt the user for the NumCuenta parameter
-            var numCuentaResult = await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
-
-            // Save the NumCuenta parameter in the stepContext.Values dictionary and proceed to the next step in the waterfall
-            stepContext.Values["NumCuenta"] = numCuentaResult.Result;
-            return await stepContext.NextAsync(stepContext, cancellationToken: cancellationToken);
         }
 
         private async Task<DialogTurnResult> PromptForSociety(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -108,7 +77,7 @@ namespace Bot.Api.Dialogs
             };
 
             // Construct the query using the CeCo and NumCuenta parameters
-            var query = $@"SELECT Centro_Gestor, Pos_Pre, Importe_Disponible_Anual_Disponible_al_momento
+            var query = $@"SELECT Centro_Gestor, Pos_Pre, PPTO_Actual_Anual_Importe_Disponible_liberado
                    FROM {tableName}
                    WHERE Centro_Gestor = '{ceco}'
                    AND Pos_Pre = '{numCuenta}'";
@@ -124,7 +93,7 @@ namespace Bot.Api.Dialogs
                     var CeCo = reader["Centro_Gestor"].ToString();
                     var NumCuenta = reader["Pos_Pre"].ToString();
                     var sociedad = society;
-                    var saldoPresupuestal = reader["Importe_Disponible_Anual_Disponible_al_momento"].ToString();
+                    var saldoPresupuestal = reader["PPTO_Actual_Anual_Importe_Disponible_liberado"].ToString();
 
                     //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
 
@@ -161,7 +130,7 @@ namespace Bot.Api.Dialogs
                     };
 
                     var reply = MessageFactory.Attachment(attachment);
-                    await stepContext.Context.SendActivityAsync(reply);
+                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
                 }
 
                 reader.Close();

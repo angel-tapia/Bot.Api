@@ -32,9 +32,9 @@ namespace Bot.Api.Dialogs
                 Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                 Buttons = new List<CardAction>
         {
-            new CardAction(ActionTypes.ImBack, title: "1) Importe disponible (liberado)", value: "ImporteDisponibleLiberado"),
+            new CardAction(ActionTypes.ImBack, title: "1) Disponible al momento", value: "Disponible al momento"),
             new CardAction(ActionTypes.ImBack, title: "2) Anual", value: "Anual"),
-            new CardAction(ActionTypes.ImBack, title: "3) Disponible al momento", value: "DisponibleAlMomento"),
+            new CardAction(ActionTypes.ImBack, title: "3) Importe disponible (liberado)", value: "Importe disponible liberado"),
             new CardAction(ActionTypes.ImBack, title: "4) Gastado total", value: "GastadoTotal"),
             new CardAction(ActionTypes.ImBack, title: "5) Comprometido", value: "Comprometido")
         }
@@ -102,7 +102,17 @@ namespace Bot.Api.Dialogs
             switch (intent)
             {
                 case "ImporteDisponibleLiberado":
-                    return await stepContext.ReplaceDialogAsync(nameof(ImporteDisponibleLiberadoDialog), cancellationToken: cancellationToken);
+                    return await stepContext.ReplaceDialogAsync(nameof(ImporteLiberadoDialog), cancellationToken: cancellationToken);
+                case "Comprometido":
+                    return await stepContext.ReplaceDialogAsync(nameof(ComprometidoDialog), cancellationToken: cancellationToken);
+                case "GastadoTotal":
+                    return await stepContext.ReplaceDialogAsync(nameof(GastadoTotalDialog), cancellationToken: cancellationToken);
+                case "Anual":
+                    return await stepContext.ReplaceDialogAsync(nameof(AnualDialog), cancellationToken: cancellationToken);
+                case "RealDevengado":
+                    return await stepContext.ReplaceDialogAsync(nameof(RealDevengadoDialog), cancellationToken: cancellationToken);
+                case "DisponibleAlMomento":
+                    return await stepContext.ReplaceDialogAsync(nameof(DisponibleAlMomentoDialog), cancellationToken: cancellationToken);
                 default:
                     throw new NotImplementedException();
             }

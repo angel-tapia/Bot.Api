@@ -37,7 +37,7 @@ namespace Bot.Api
             _dialogSet.Add(new TraspasoDialog());
             _dialogSet.Add(new FAQsDialog());
             _dialogSet.Add(new SaludoDialog());
-            _dialogSet.Add(new ImporteDisponibleLiberadoDialog());
+            _dialogSet.Add(new DisponibleAlMomentoDialog());
             _dialogSet.Add(new TextPrompt(nameof(TextPrompt)));
         }
 
