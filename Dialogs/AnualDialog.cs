@@ -38,7 +38,7 @@ namespace Bot.Api.Dialogs
                 Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                 Buttons = new List<CardAction>
                 {
-                    new CardAction(ActionTypes.ImBack, title: "1) AC SAB", value: "AC SAB"),
+                    new CardAction(ActionTypes.ImBack, title: "1) AC SAB", value: "AC_SAB"),
                     new CardAction(ActionTypes.ImBack, title: "2) DAC", value: "DAC")
                 }
             };
@@ -60,10 +60,12 @@ namespace Bot.Api.Dialogs
 
             var table = "users";
             var name = "Angel Manuel Tapia Avitia";
+            var sociedad = stepContext.Values["Society"];
 
             string query = $@"SELECT CeCo, DescCeCo, Sociedad
                    FROM {table}
-                   WHERE Name = '{name}'";
+                   WHERE Name = '{name}' 
+                   AND Sociedad = '{sociedad}'";
 
             try
             {
@@ -84,10 +86,10 @@ namespace Bot.Api.Dialogs
                     var column3 = new AdaptiveColumn() { Width = "10%" };
 
                     column1.Items.Add(new AdaptiveTextBlock() { Text = "Descripcion" });
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
+                    column1.Items.Add(new AdaptiveTextBlock() { Text = DescCeCo });
 
                     column2.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = DescCeCo });
+                    column2.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
 
                     column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
                     column3.Items.Add(new AdaptiveTextBlock() { Text = Sociedad });
