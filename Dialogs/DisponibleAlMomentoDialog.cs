@@ -140,12 +140,21 @@ namespace Bot.Api.Dialogs
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
 
-            var table = "users";
+            var society = (string)stepContext.Values["Society"];
+            var ceco = (string)stepContext.Values["CeCo"];
+            var table = society switch
+            {
+                "DAC" => "[DummyDAC]",
+                "AC SAB" => "[Dummy_AC_SAB]",
+                "SAB" => "[Dummy_AC_SAB]",
+                "AC_SAB" => "[Dummy_AC_SAB]",
+                _ => throw new ArgumentException($"Invalid society: {society}")
+            };
             var name = "Angel Manuel Tapia Avitia";
 
-            string query = $@"SELECT NumCuenta, DescCuenta, Sociedad
+            string query = $@"SELECT Desc_PosPre, Pos_Pre
                    FROM {table}
-                   WHERE Name = '{name}'";
+                   WHERE Centro_Gestor = '{ceco}'";
 
             try
             {
@@ -154,9 +163,9 @@ namespace Bot.Api.Dialogs
 
                 while (reader.Read())
                 {
-                    var NumCuenta = reader["NumCuenta"].ToString();
-                    var DescCuenta = reader["DescCuenta"].ToString();
-                    var Sociedad = reader["Sociedad"].ToString();
+                    var NumCuenta = reader["Pos_Pre"].ToString();
+                    var DescCuenta = reader["Desc_PosPre"].ToString();
+                    var Sociedad = society;
 
                     var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
                     var columnSet = new AdaptiveColumnSet();
