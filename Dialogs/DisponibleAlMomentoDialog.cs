@@ -40,7 +40,7 @@ namespace Bot.Api.Dialogs
                 Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                 Buttons = new List<CardAction>
                 {
-                    new CardAction(ActionTypes.ImBack, title: "1) AC SAB", value: "AC SAB"),
+                    new CardAction(ActionTypes.ImBack, title: "1) AC SAB", value: "AC_SAB"),
                     new CardAction(ActionTypes.ImBack, title: "2) DAC", value: "DAC")
                 }
             };
