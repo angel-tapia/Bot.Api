@@ -73,6 +73,10 @@ namespace Bot.Api
                         string[] parts = name.Split(new char[] { ' ' });
                         string firstName = parts[2];
                         firstName = firstName.Substring(0, 1).ToUpper() + firstName.Substring(1).ToLower();
+                        var LastName = parts[0].Substring(0, 1).ToUpper() + parts[0].Substring(1).ToLower()
+                                 + parts[1].Substring(0, 1).ToUpper() + parts[1].Substring(1).ToLower();
+                        var secondName = parts[3];
+
 
                         await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {firstName}!</b>"), cancellationToken);
                     }

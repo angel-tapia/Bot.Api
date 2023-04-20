@@ -7,6 +7,8 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using AdaptiveCards;
 using System.Collections.Generic;
+using Microsoft.Bot.Builder.Teams;
+using System.Net.Sockets;
 
 namespace Bot.Api.Dialogs
 {
@@ -19,7 +21,9 @@ namespace Bot.Api.Dialogs
                 PromptForSociety,
                 PrintCeCosUsuario,
                 PromptForCeCo,
-                PromptForNumCuenta
+                PrintCuentasUsuario,
+                PromptForNumCuenta,
+                End
             }));
         }
 
@@ -45,7 +49,69 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> PrintCeCosUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            stepContext.Values["Society"] = (string)stepContext.Result;
 
+            //Creamos la instancia para la conexion 
+            var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
+
+            var table = "users";
+            var name = "Angel Manuel Tapia Avitia";
+
+            string query = $@"SELECT CeCo, DescCeCo, Sociedad
+                   FROM {table}
+                   WHERE Name = '{name}'";
+
+            try
+            {
+                //Ejecutamos la conexion
+                var reader = db.ExecuteReader(query);
+
+                while (reader.Read())
+                {
+                    var CeCo = reader["CeCo"].ToString();
+                    var DescCeCo = reader["DescCeCo"].ToString();
+                    var Sociedad = reader["Sociedad"].ToString();
+                    //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
+
+                    var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
+                    var columnSet = new AdaptiveColumnSet();
+                    var column1 = new AdaptiveColumn() { Width = "20%" };
+                    var column2 = new AdaptiveColumn() { Width = "70%" };
+                    var column3 = new AdaptiveColumn() { Width = "10%" };
+
+                    column1.Items.Add(new AdaptiveTextBlock() { Text = "Descripcion" });
+                    column1.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
+
+                    column2.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
+                    column2.Items.Add(new AdaptiveTextBlock() { Text = DescCeCo });
+
+                    column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
+                    column3.Items.Add(new AdaptiveTextBlock() { Text = Sociedad });
+
+                    columnSet.Columns.Add(column1);
+                    columnSet.Columns.Add(column2);
+                    columnSet.Columns.Add(column3);
+
+                    card.Body.Add(columnSet);
+
+                    Attachment attachment = new Attachment()
+                    {
+                        ContentType = AdaptiveCard.ContentType,
+                        Content = card
+                    };
+
+                    var reply = MessageFactory.Attachment(attachment);
+                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                }
+
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                await stepContext.Context.SendActivityAsync("The bot encountered an error or bug.", cancellationToken: cancellationToken);
+                await stepContext.Context.SendActivityAsync("To continue to run this bot, please fix the bot source code.", cancellationToken: cancellationToken);
+                await stepContext.Context.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
+            }
             return await stepContext.NextAsync(cancellationToken : cancellationToken);
         }
 
@@ -56,13 +122,75 @@ namespace Bot.Api.Dialogs
                 Prompt = MessageFactory.Text("Por favor ingresa el CeCo que quieres consultar.")
             };
 
-            stepContext.Values["Society"] = (string)stepContext.Result;
-
             return await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
         }
 
         private async Task<DialogTurnResult> PrintCuentasUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            stepContext.Values["CeCo"] = (string)stepContext.Result;
+
+            //Creamos la instancia para la conexion 
+            var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
+
+            var table = "users";
+            var name = "Angel Manuel Tapia Avitia";
+
+            string query = $@"SELECT NumCuenta, DescCuenta, Sociedad
+                   FROM {table}
+                   WHERE Name = '{name}'";
+
+            try
+            {
+                //Ejecutamos la conexion
+                var reader = db.ExecuteReader(query);
+
+                while (reader.Read())
+                {
+                    var NumCuenta = reader["NumCuenta"].ToString();
+                    var DescCuenta = reader["DescCuenta"].ToString();
+                    var Sociedad = reader["Sociedad"].ToString();
+
+                    var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
+                    var columnSet = new AdaptiveColumnSet();
+                    var column1 = new AdaptiveColumn() { Width = "20%" };
+                    var column2 = new AdaptiveColumn() { Width = "70%" };
+                    var column3 = new AdaptiveColumn() { Width = "10%" };
+
+                    column1.Items.Add(new AdaptiveTextBlock() { Text = "Descripcion" });
+                    column1.Items.Add(new AdaptiveTextBlock() { Text = DescCuenta });
+
+                    column2.Items.Add(new AdaptiveTextBlock() { Text = "Numero de cuenta" });
+                    column2.Items.Add(new AdaptiveTextBlock() { Text = NumCuenta});
+
+                    column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
+                    column3.Items.Add(new AdaptiveTextBlock() { Text = Sociedad });
+
+                    columnSet.Columns.Add(column1);
+                    columnSet.Columns.Add(column2);
+                    columnSet.Columns.Add(column3);
+
+                    card.Body.Add(columnSet);
+
+                    Attachment attachment = new Attachment()
+                    {
+                        ContentType = AdaptiveCard.ContentType,
+                        Content = card
+                    };
+
+                    var reply = MessageFactory.Attachment(attachment);
+                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                }
+
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                await stepContext.Context.SendActivityAsync("The bot encountered an error or bug.", cancellationToken: cancellationToken);
+                await stepContext.Context.SendActivityAsync("To continue to run this bot, please fix the bot source code.", cancellationToken: cancellationToken);
+                await stepContext.Context.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
+            }
+
+
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
@@ -73,11 +201,14 @@ namespace Bot.Api.Dialogs
                 Prompt = MessageFactory.Text("Por favor ingresa el numero de cuenta que quieres consultar.")
             };
 
-            stepContext.Values["CeCo"] = (string)stepContext.Result;
-
             return await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
         }
 
-        
+        private async Task<DialogTurnResult> End(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            stepContext.Values["NumCuenta"] = (string)stepContext.Result;
+
+            return await stepContext.NextAsync(stepContext, cancellationToken: cancellationToken);
+        }
     }
 }
