@@ -31,13 +31,14 @@ namespace Bot.Api.Dialogs
             {
                 Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                 Buttons = new List<CardAction>
-        {
-            new CardAction(ActionTypes.ImBack, title: "1) Disponible al momento", value: "Disponible al momento"),
-            new CardAction(ActionTypes.ImBack, title: "2) Anual", value: "Anual"),
-            new CardAction(ActionTypes.ImBack, title: "3) Importe disponible (liberado)", value: "Importe disponible liberado"),
-            new CardAction(ActionTypes.ImBack, title: "4) Gastado total", value: "GastadoTotal"),
-            new CardAction(ActionTypes.ImBack, title: "5) Comprometido", value: "Comprometido")
-        }
+                {
+                    new CardAction(ActionTypes.ImBack, title: "1) Disponible al momento", value: "Disponible al momento"),
+                    new CardAction(ActionTypes.ImBack, title: "2) Anual", value: "Anual"),
+                    new CardAction(ActionTypes.ImBack, title: "3) Importe disponible (liberado)", value: "Importe disponible liberado"),
+                    new CardAction(ActionTypes.ImBack, title: "4) Gastado total", value: "GastadoTotal"),
+                    new CardAction(ActionTypes.ImBack, title: "5) Comprometido", value: "Comprometido"),
+                    new CardAction(ActionTypes.ImBack, title: "6) Real devengado", value: "Real devengado")
+                }
             };
             await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
             await stepContext.Context.SendActivityAsync(MessageFactory.Text($"O escribe tu mismo el que quieras"), cancellationToken);
@@ -45,7 +46,6 @@ namespace Bot.Api.Dialogs
             // Wait for user input
 
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions(), cancellationToken);
-            //return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
 

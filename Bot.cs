@@ -38,6 +38,12 @@ namespace Bot.Api
             _dialogSet.Add(new FAQsDialog());
             _dialogSet.Add(new SaludoDialog());
             _dialogSet.Add(new DisponibleAlMomentoDialog());
+            _dialogSet.Add(new AnualDialog());
+            _dialogSet.Add(new ComprometidoDialog());
+            _dialogSet.Add(new GastadoTotalDialog());
+            _dialogSet.Add(new ImporteLiberadoDialog());
+            _dialogSet.Add(new RealDevengadoDialog());
+            _dialogSet.Add(new ReadInfoDialog());
             _dialogSet.Add(new TextPrompt(nameof(TextPrompt)));
         }
 
