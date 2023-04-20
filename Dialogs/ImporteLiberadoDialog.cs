@@ -233,7 +233,7 @@ namespace Bot.Api.Dialogs
                 "DAC" => "[DummyDAC]",
                 "AC SAB" => "[Dummy_AC_SAB]",
                 "SAB" => "[Dummy_AC_SAB]",
-                "AC_SAB" => "[Dummy_AC_SAB",
+                "AC_SAB" => "[Dummy_AC_SAB]",
                 _ => throw new ArgumentException($"Invalid society: {society}")
             };
 
