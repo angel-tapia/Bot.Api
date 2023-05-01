@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using AdaptiveCards;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bot.Api.Dialogs
 {
@@ -19,10 +20,10 @@ namespace Bot.Api.Dialogs
                 PromptForSociety,
                 PrintCeCosUsuario,
                 PromptForCeCo,
-                PrintCuentasUsuario,
+                PrintCuentasUsuario/*,
                 PromptForNumCuenta,
                 ShowUsers,
-                End
+                End*/
             }));
         }
 
@@ -71,6 +72,11 @@ namespace Bot.Api.Dialogs
             {
                 //Ejecutamos la conexion
                 var reader = db.ExecuteReader(query);
+                var cardC = new HeroCard()
+                {
+                    Text = "Escoje de estos centros de costos disponibles para tu usuario:",
+                    Buttons = new List<CardAction>()
+                };
 
                 while (reader.Read())
                 {
@@ -79,36 +85,11 @@ namespace Bot.Api.Dialogs
                     var Sociedad = reader["Sociedad"].ToString();
                     //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
 
-                    var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
-                    var columnSet = new AdaptiveColumnSet();
-                    var column1 = new AdaptiveColumn() { Width = "20%" };
-                    var column2 = new AdaptiveColumn() { Width = "70%" };
-                    var column3 = new AdaptiveColumn() { Width = "10%" };
-
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = "Descripcion" });
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = DescCeCo });
-
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
-
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = Sociedad });
-
-                    columnSet.Columns.Add(column1);
-                    columnSet.Columns.Add(column2);
-                    columnSet.Columns.Add(column3);
-
-                    card.Body.Add(columnSet);
-
-                    Attachment attachment = new Attachment()
-                    {
-                        ContentType = AdaptiveCard.ContentType,
-                        Content = card
-                    };
-
-                    var reply = MessageFactory.Attachment(attachment);
-                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                    cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{DescCeCo}", value: $@"{CeCo}"));
                 }
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Finalizar operacion", value: $@"Finalizar"));
+                await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);      
 
                 reader.Close();
             }
@@ -125,15 +106,65 @@ namespace Bot.Api.Dialogs
         {
             var promptOptions = new PromptOptions
             {
-                Prompt = MessageFactory.Text("Por favor ingresa el CeCo que quieres consultar.")
+                Prompt = MessageFactory.Text("Introduce el CeCo")
             };
 
             return await stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
         }
 
+        private Task<DialogTurnResult> PromptForCeCoDummy(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            var promptOptions = new PromptOptions
+            {
+                Prompt = MessageFactory.Text("")
+            };
+
+            return stepContext.PromptAsync(nameof(TextPrompt), promptOptions, cancellationToken);
+        }
+
         private async Task<DialogTurnResult> PrintCuentasUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            stepContext.Values["CeCo"] = (string)stepContext.Result;
+            var cecoList = new List<string>
+            {
+                (string)stepContext.Result
+            };
+
+            // Prompt the user for CeCos until they type "Finalizar"
+            while (true)
+            {
+                var result = await PromptForCeCoDummy(stepContext, cancellationToken);
+                if ((string)result.Result == "Finalizar")
+                {
+                    break;
+                }
+                else
+                {
+                    cecoList.Add((string)result.Result);
+                }
+            }
+
+
+            for(int i = 0; i < cecoList.Count; i++)
+            {
+                await stepContext.Context.SendActivityAsync($@"{cecoList[i]}", cancellationToken: cancellationToken);
+            }
+            /*
+            if ((string)stepContext.Result != "Finalizar")
+            {
+                stepContext.Values["CeCos"] = new List<string>();
+                var ceCoList = new List<string>();
+
+                ceCoList.Add((string)stepContext.Result);
+                stepContext.Values["CeCos"] = ceCoList;
+
+                while ((string)stepContext.Result != "Finalizar")
+                {
+                    await PromptForCeCo(stepContext, cancellationToken);
+
+                    await stepContext.Context.SendActivityAsync($@"{stepContext.Result}", cancellationToken: cancellationToken);
+                }
+            }*/
+            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
 
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
@@ -244,7 +275,6 @@ namespace Bot.Api.Dialogs
                    WHERE Centro_Gestor = '{ceco}'
                    AND Pos_Pre = '{numCuenta}'";
 
-
             try
             {
                 //Ejecutamos la conexion
@@ -256,8 +286,6 @@ namespace Bot.Api.Dialogs
                     var NumCuenta = reader["Pos_Pre"].ToString();
                     var sociedad = society;
                     var saldoPresupuestal = reader["PPTO_Anual"].ToString();
-
-                    //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
 
                     var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
                     var columnSet = new AdaptiveColumnSet();
