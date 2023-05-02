@@ -8,8 +8,6 @@ using Microsoft.Bot.Schema;
 using AdaptiveCards;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using DateTime;
-
 
 namespace Bot.Api.Dialogs
 {

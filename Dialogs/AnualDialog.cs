@@ -8,6 +8,7 @@ using Microsoft.Bot.Schema;
 using AdaptiveCards;
 using System.Collections.Generic;
 using System.Linq;
+using static Azure.Core.HttpHeader;
 
 namespace Bot.Api.Dialogs
 {
@@ -78,6 +79,8 @@ namespace Bot.Api.Dialogs
                     Buttons = new List<CardAction>()
                 };
 
+                var cecoList = new List<string>();
+
                 while (reader.Read())
                 {
                     var CeCo = reader["CeCo"].ToString();
@@ -86,9 +89,12 @@ namespace Bot.Api.Dialogs
                     //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
 
                     cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{CeCo} {DescCeCo}", value: $@"{CeCo}"));
+                    cecoList.Add(CeCo);
                 }
 
-                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Finalizar operacion", value: $@"Finalizar"));
+                stepContext.Values["AUX"] = cecoList;
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Todos los Centros de Costos", value: $@"Todos"));
                 await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);      
 
                 reader.Close();
@@ -114,12 +120,8 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> PrintCuentasUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            /*
-            var cecoList = new List<string>
-            {
-                (string)stepContext.Result
-            };
 
+            /*
             // Prompt the user for CeCos until they type "Finalizar"
             while (true)
             {
@@ -134,13 +136,23 @@ namespace Bot.Api.Dialogs
                 }
             }
             }*/
-            stepContext.Values["CeCo"] = (string)stepContext.Result;
+            if((string)stepContext.Result == "Todos")
+            {
+                stepContext.Values["CeCo"] = stepContext.Values["AUX"];
+            }
+            else
+            {
+                stepContext.Values["CeCo"] = new List<string>()
+                {
+                    (string)stepContext.Result
+                };
+            }
 
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
 
             var society = (string)stepContext.Values["Society"];
-            var ceco = (string)stepContext.Values["CeCo"];
+            var ceco = (List<string>)stepContext.Values["CeCo"];
             var table = society switch
             {
                 "DAC" => "[DummyDAC]",
@@ -152,8 +164,8 @@ namespace Bot.Api.Dialogs
             var name = "Angel Manuel Tapia Avitia";
 
             string query = $@"SELECT Desc_PosPre, Pos_Pre
-                   FROM {table}
-                   WHERE Centro_Gestor = '{ceco}'";
+       FROM {table}
+       WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})";
 
             try
             {
