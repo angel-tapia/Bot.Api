@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using AdaptiveCards;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bot.Api.Dialogs
 {
@@ -76,6 +77,8 @@ namespace Bot.Api.Dialogs
                     Buttons = new List<CardAction>()
                 };
 
+                var cecoList = new List<string>();
+
                 while (reader.Read())
                 {
                     var CeCo = reader["CeCo"].ToString();
@@ -84,9 +87,12 @@ namespace Bot.Api.Dialogs
                     //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
 
                     cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{CeCo} {DescCeCo}", value: $@"{CeCo}"));
+                    cecoList.Add(CeCo);
                 }
 
-                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Finalizar operacion", value: $@"Finalizar"));
+                stepContext.Values["AUX"] = cecoList;
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Todos los Centros de Costos", value: $@"Todos"));
                 await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);
 
                 reader.Close();
@@ -113,13 +119,23 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> PrintCuentasUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            stepContext.Values["CeCo"] = (string)stepContext.Result;
+            if ((string)stepContext.Result == "Todos")
+            {
+                stepContext.Values["CeCo"] = stepContext.Values["AUX"];
+            }
+            else
+            {
+                stepContext.Values["CeCo"] = new List<string>()
+                {
+                    (string)stepContext.Result
+                };
+            }
 
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
 
             var society = (string)stepContext.Values["Society"];
-            var ceco = (string)stepContext.Values["CeCo"];
+            var ceco = (List<string>)stepContext.Values["CeCo"];
             var table = society switch
             {
                 "DAC" => "[DummyDAC]",
@@ -131,8 +147,8 @@ namespace Bot.Api.Dialogs
             var name = "Angel Manuel Tapia Avitia";
 
             string query = $@"SELECT Desc_PosPre, Pos_Pre
-                   FROM {table}
-                   WHERE Centro_Gestor = '{ceco}'";
+                               FROM {table}
+                               WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})";
 
             try
             {
@@ -145,6 +161,8 @@ namespace Bot.Api.Dialogs
                     Buttons = new List<CardAction>()
                 };
 
+                var cuentaList = new List<string>();
+
                 while (reader.Read())
                 {
                     var NumCuenta = reader["Pos_Pre"].ToString();
@@ -152,9 +170,12 @@ namespace Bot.Api.Dialogs
                     var Sociedad = society;
 
                     cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{DescCuenta}", value: $@"{NumCuenta}"));
-                }
 
-                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Finalizar operacion", value: $@"Finalizar"));
+                    cuentaList.Add(NumCuenta);
+                }
+                stepContext.Values["AUX"] = cuentaList;
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Todas las cuentas", value: $@"Todas"));
                 await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);
 
                 reader.Close();
@@ -182,13 +203,25 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> ShowUsers(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if ((string)stepContext.Result == "Todas")
+            {
+                stepContext.Values["Cuenta"] = stepContext.Values["AUX"];
+            }
+            else
+            {
+                stepContext.Values["Cuenta"] = new List<string>()
+                {
+                    (string)stepContext.Result
+                };
+            }
+
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
 
             // Retrieve the saved parameters from the stepContext.Values dictionary
             var society = (string)stepContext.Values["Society"];
-            var ceco = (string)stepContext.Values["CeCo"];
-            var numCuenta = (string)stepContext.Result;
+            var ceco = (List<string>)stepContext.Values["CeCo"];
+            var numCuenta = (List<string>)stepContext.Values["Cuenta"];
 
             var tableName = society switch
             {
@@ -202,8 +235,8 @@ namespace Bot.Api.Dialogs
             // Construct the query using the CeCo and NumCuenta parameters
             var query = $@"SELECT Centro_Gestor, Pos_Pre, PPTO_Actual_Anual_Importe_Disponible_liberado
                    FROM {tableName}
-                   WHERE Centro_Gestor = '{ceco}'
-                   AND Pos_Pre = '{numCuenta}'";
+                   WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})
+                   AND Pos_Pre IN({string.Join(",", numCuenta.Select(c => $"'{c}'"))})";
 
 
             try

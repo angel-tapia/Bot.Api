@@ -120,22 +120,6 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> PrintCuentasUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-
-            /*
-            // Prompt the user for CeCos until they type "Finalizar"
-            while (true)
-            {
-                var result = await PromptForCeCoDummy(stepContext, cancellationToken);
-                if ((string)result.Result == "Finalizar")
-                {
-                    break;
-                }
-                else
-                {
-                    cecoList.Add((string)result.Result);
-                }
-            }
-            }*/
             if((string)stepContext.Result == "Todos")
             {
                 stepContext.Values["CeCo"] = stepContext.Values["AUX"];
@@ -164,8 +148,8 @@ namespace Bot.Api.Dialogs
             var name = "Angel Manuel Tapia Avitia";
 
             string query = $@"SELECT Desc_PosPre, Pos_Pre
-       FROM {table}
-       WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})";
+                               FROM {table}
+                               WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})";
 
             try
             {
@@ -178,6 +162,8 @@ namespace Bot.Api.Dialogs
                     Buttons = new List<CardAction>()
                 };
 
+                var cuentaList = new List<string>();
+
                 while (reader.Read())
                 {
                     var NumCuenta = reader["Pos_Pre"].ToString();
@@ -185,9 +171,12 @@ namespace Bot.Api.Dialogs
                     var Sociedad = society;
 
                     cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{DescCuenta}", value: $@"{NumCuenta}"));
-                }
 
-                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Finalizar operacion", value: $@"Finalizar"));
+                    cuentaList.Add(NumCuenta);
+                }
+                stepContext.Values["AUX"] = cuentaList;
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Todas las cuentas", value: $@"Todas"));
                 await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);
 
                 reader.Close();
@@ -215,13 +204,25 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> ShowUsers(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if ((string)stepContext.Result == "Todas")
+            {
+                stepContext.Values["Cuenta"] = stepContext.Values["AUX"];
+            }
+            else
+            {
+                stepContext.Values["Cuenta"] = new List<string>()
+                {
+                    (string)stepContext.Result
+                };
+            }
+
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
 
             // Retrieve the saved parameters from the stepContext.Values dictionary
             var society = (string)stepContext.Values["Society"];
-            var ceco = (string)stepContext.Values["CeCo"];
-            var numCuenta = (string)stepContext.Result;
+            var ceco = (List<string>)stepContext.Values["CeCo"];
+            var numCuenta = (List<string>)stepContext.Values["Cuenta"];
 
             var tableName = society switch
             {
@@ -235,13 +236,25 @@ namespace Bot.Api.Dialogs
             // Construct the query using the CeCo and NumCuenta parameters
             var query = $@"SELECT Centro_Gestor, Pos_Pre, PPTO_Anual
                    FROM {tableName}
-                   WHERE Centro_Gestor = '{ceco}'
-                   AND Pos_Pre = '{numCuenta}'";
+                   WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})
+                   AND Pos_Pre IN({ string.Join(",", numCuenta.Select(c => $"'{c}'"))})";
 
             try
             {
                 //Ejecutamos la conexion
                 var reader = db.ExecuteReader(query);
+
+                var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
+                var columnSet = new AdaptiveColumnSet();
+                var column1 = new AdaptiveColumn() { Width = "20%" };
+                var column2 = new AdaptiveColumn() { Width = "30%" };
+                var column3 = new AdaptiveColumn() { Width = "25%" };
+                var column4 = new AdaptiveColumn() { Width = "25%" };
+
+                column1.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
+                column2.Items.Add(new AdaptiveTextBlock() { Text = "Numero de cuenta" });
+                column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
+                column4.Items.Add(new AdaptiveTextBlock() { Text = "Saldo Presupuestal" });
 
                 while (reader.Read())
                 {
@@ -250,41 +263,27 @@ namespace Bot.Api.Dialogs
                     var sociedad = society;
                     var saldoPresupuestal = reader["PPTO_Anual"].ToString();
 
-                    var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
-                    var columnSet = new AdaptiveColumnSet();
-                    var column1 = new AdaptiveColumn() { Width = "20%" };
-                    var column2 = new AdaptiveColumn() { Width = "30%" };
-                    var column3 = new AdaptiveColumn() { Width = "25%" };
-                    var column4 = new AdaptiveColumn() { Width = "25%" };
-
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
                     column1.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
-
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = "Numero de cuenta" });
                     column2.Items.Add(new AdaptiveTextBlock() { Text = NumCuenta });
-
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
                     column3.Items.Add(new AdaptiveTextBlock() { Text = sociedad });
-
-                    column4.Items.Add(new AdaptiveTextBlock() { Text = "Saldo Presupuestal" });
                     column4.Items.Add(new AdaptiveTextBlock() { Text = saldoPresupuestal });
-
-                    columnSet.Columns.Add(column1);
-                    columnSet.Columns.Add(column2);
-                    columnSet.Columns.Add(column3);
-                    columnSet.Columns.Add(column4);
-
-                    card.Body.Add(columnSet);
-
-                    Attachment attachment = new Attachment()
-                    {
-                        ContentType = AdaptiveCard.ContentType,
-                        Content = card
-                    };
-
-                    var reply = MessageFactory.Attachment(attachment);
-                    await stepContext.Context.SendActivityAsync(reply);
                 }
+
+                columnSet.Columns.Add(column1);
+                columnSet.Columns.Add(column2);
+                columnSet.Columns.Add(column3);
+                columnSet.Columns.Add(column4);
+
+                card.Body.Add(columnSet);
+
+                Attachment attachment = new Attachment()
+                {
+                    ContentType = AdaptiveCard.ContentType,
+                    Content = card
+                };
+
+                var reply = MessageFactory.Attachment(attachment);
+                await stepContext.Context.SendActivityAsync(reply);
 
                 reader.Close();
             }
