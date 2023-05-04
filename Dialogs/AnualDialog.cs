@@ -158,7 +158,7 @@ namespace Bot.Api.Dialogs
 
                 var cardC = new HeroCard()
                 {
-                    Text = "Escoje de estos centros de costos disponibles para tu usuario:",
+                    Text = "Escoje de estas cuentas relacionadas a tu o tus Centros de Costo previamente elegidos:",
                     Buttons = new List<CardAction>()
                 };
 
@@ -234,7 +234,7 @@ namespace Bot.Api.Dialogs
             };
 
             // Construct the query using the CeCo and NumCuenta parameters
-            var query = $@"SELECT Centro_Gestor, Pos_Pre, PPTO_Anual
+            var query = $@"SELECT Desc_CeGe, Centro_Gestor, Desc_PosPre, Pos_Pre, PPTO_Anual
                    FROM {tableName}
                    WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})
                    AND Pos_Pre IN({ string.Join(",", numCuenta.Select(c => $"'{c}'"))})";
@@ -246,30 +246,40 @@ namespace Bot.Api.Dialogs
 
                 var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
                 var columnSet = new AdaptiveColumnSet();
-                var column1 = new AdaptiveColumn() { Width = "20%" };
-                var column2 = new AdaptiveColumn() { Width = "30%" };
-                var column3 = new AdaptiveColumn() { Width = "25%" };
-                var column4 = new AdaptiveColumn() { Width = "25%" };
+                var columnCeCo = new AdaptiveColumn() { Width = "20%" };
+                var columnCuenta = new AdaptiveColumn() { Width = "20%" };
+                var column1 = new AdaptiveColumn() { Width = "15%" };
+                var column2 = new AdaptiveColumn() { Width = "15%" };
+                var column3 = new AdaptiveColumn() { Width = "15%" };
+                var column4 = new AdaptiveColumn() { Width = "15%" };
 
-                column1.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
-                column2.Items.Add(new AdaptiveTextBlock() { Text = "Numero de cuenta" });
+                columnCeCo.Items.Add(new AdaptiveTextBlock() { Text = "Desc CeCo" });
+                column1.Items.Add(new AdaptiveTextBlock() { Text = "CeCo" });
+                columnCuenta.Items.Add(new AdaptiveTextBlock() { Text = "Desc Cuenta"});
+                column2.Items.Add(new AdaptiveTextBlock() { Text = "Cuenta" });
                 column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
-                column4.Items.Add(new AdaptiveTextBlock() { Text = "Saldo Presupuestal" });
+                column4.Items.Add(new AdaptiveTextBlock() { Text = "Saldo" });
 
                 while (reader.Read())
                 {
+                    var DescCeCo = reader["Desc_CeGe"].ToString();
                     var CeCo = reader["Centro_Gestor"].ToString();
+                    var DescCuenta = reader["Desc_PosPre"].ToString();
                     var NumCuenta = reader["Pos_Pre"].ToString();
                     var sociedad = society;
                     var saldoPresupuestal = reader["PPTO_Anual"].ToString();
 
+                    columnCeCo.Items.Add(new AdaptiveTextBlock() { Text = DescCeCo });
                     column1.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
+                    columnCuenta.Items.Add(new AdaptiveTextBlock() { Text = DescCuenta });
                     column2.Items.Add(new AdaptiveTextBlock() { Text = NumCuenta });
                     column3.Items.Add(new AdaptiveTextBlock() { Text = sociedad });
                     column4.Items.Add(new AdaptiveTextBlock() { Text = saldoPresupuestal });
                 }
 
+                columnSet.Columns.Add(columnCeCo);
                 columnSet.Columns.Add(column1);
+                columnSet.Columns.Add(columnCuenta);
                 columnSet.Columns.Add(column2);
                 columnSet.Columns.Add(column3);
                 columnSet.Columns.Add(column4);
