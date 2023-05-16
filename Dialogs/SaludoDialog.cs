@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
 using static Antlr4.Runtime.Atn.SemanticContext;
 
@@ -22,6 +24,22 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> SaludoAsync(WaterfallStepContext dialog, CancellationToken cancellationToken)
         {
+            /*try
+            {
+                var user = await TeamsInfo.GetMemberAsync(dialog.Context, dialog.Context.Activity.Recipient.Id, cancellationToken);
+                var name = user.Name;
+
+                if (!name.EndsWith("(OFCORP)"))
+                {
+                    await dialog.Context.SendActivityAsync("No tiene acceso usted a este chatbot.");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                await dialog.Context.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
+            }*/
+
             await dialog.Context.SendActivityAsync(MessageFactory.Text($"Hola! Estoy feliz por ayudarte, escribe tu pregunta o seleccionala del menu de abajo para que comencemos ;)"), cancellationToken);
             // Deploy a option's list to select or write the question
             await dialog.Context.SendActivityAsync(MessageFactory.Text($"Elije una opción o escribe tu pregunta"), cancellationToken);

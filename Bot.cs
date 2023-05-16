@@ -81,6 +81,11 @@ namespace Bot.Api
                         if (!name.EndsWith("(OFCORP)"))
                         {
                             await turnContext.SendActivityAsync("No tiene acceso usted a este chatbot.");
+                            int x = 0;
+                            while (true)
+                            {
+                                x++;
+                            }
                             return;
                         }
 
@@ -121,21 +126,6 @@ namespace Bot.Api
         /// 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            try
-            {
-                var user = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.Recipient.Id, cancellationToken);
-                var name = user.Name;
-
-                if (!name.EndsWith("(OFCORP)"))
-                {
-                    await turnContext.SendActivityAsync("No tiene acceso usted a este chatbot.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                await turnContext.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
-            }
             var dialogContext = await _dialogSet.CreateContextAsync(turnContext, cancellationToken);
 
             // Use the DialogSet to start the dialog if it hasn't started yet.
