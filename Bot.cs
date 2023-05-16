@@ -124,9 +124,9 @@ namespace Bot.Api
             try
             {
                 var user = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.Recipient.Id, cancellationToken);
-                var email = user.Email;
-                
-                if(!email.EndsWith("@arcacontal.com") || !email.EndsWith("@ext.arcacontal.com"))
+                var email = user.Name;
+
+                if (!name.EndsWith("(OFCORP)"))
                 {
                     await turnContext.SendActivityAsync("No tiene acceso usted a este chatbot.");
                     return;
