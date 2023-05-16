@@ -8,9 +8,6 @@ using Azure.Core;
 using Azure;
 using Azure.AI.Language.Conversations;
 using System.Text.Json;
-using AdaptiveExpressions;
-using System.Configuration;
-using Microsoft.Bot.Schema;
 
 namespace Bot.Api.Dialogs
 {

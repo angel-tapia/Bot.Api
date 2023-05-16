@@ -9,6 +9,7 @@ using AdaptiveCards;
 using System.Collections.Generic;
 using Microsoft.Bot.Builder.Teams;
 using System.Net.Sockets;
+using System.Linq;
 
 namespace Bot.Api.Dialogs
 {
@@ -34,7 +35,7 @@ namespace Bot.Api.Dialogs
                 Text = "Aquí hay una variedad de opciones de las cuales puedes escoger:",
                 Buttons = new List<CardAction>
                 {
-                    new CardAction(ActionTypes.ImBack, title: "1) AC SAB", value: "AC SAB"),
+                    new CardAction(ActionTypes.ImBack, title: "1) AC SAB", value: "AC_SAB"),
                     new CardAction(ActionTypes.ImBack, title: "2) DAC", value: "DAC")
                 }
             };
@@ -56,15 +57,24 @@ namespace Bot.Api.Dialogs
 
             var table = "users";
             var name = "Angel Manuel Tapia Avitia";
+            var sociedad = stepContext.Values["Society"];
 
             string query = $@"SELECT CeCo, DescCeCo, Sociedad
                    FROM {table}
-                   WHERE Name = '{name}'";
+                   WHERE Name = '{name}' 
+                   AND Sociedad = '{sociedad}'";
 
             try
             {
                 //Ejecutamos la conexion
                 var reader = db.ExecuteReader(query);
+                var cardC = new HeroCard()
+                {
+                    Text = "Escoje de estos centros de costos disponibles para tu usuario:",
+                    Buttons = new List<CardAction>()
+                };
+
+                var cecoList = new List<string>();
 
                 while (reader.Read())
                 {
@@ -73,36 +83,14 @@ namespace Bot.Api.Dialogs
                     var Sociedad = reader["Sociedad"].ToString();
                     //await stepContext.Context.SendActivityAsync($"Centro de Costos: {CeCo}, Numero de cuenta: {NumCuenta}, Sociedad: {sociedad}, Saldo Presupuestal: {saldoPresupuestal}");
 
-                    var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
-                    var columnSet = new AdaptiveColumnSet();
-                    var column1 = new AdaptiveColumn() { Width = "20%" };
-                    var column2 = new AdaptiveColumn() { Width = "70%" };
-                    var column3 = new AdaptiveColumn() { Width = "10%" };
-
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = "Descripcion" });
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = CeCo });
-
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = "Centro de Costos" });
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = DescCeCo });
-
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = Sociedad });
-
-                    columnSet.Columns.Add(column1);
-                    columnSet.Columns.Add(column2);
-                    columnSet.Columns.Add(column3);
-
-                    card.Body.Add(columnSet);
-
-                    Attachment attachment = new Attachment()
-                    {
-                        ContentType = AdaptiveCard.ContentType,
-                        Content = card
-                    };
-
-                    var reply = MessageFactory.Attachment(attachment);
-                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                    cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{CeCo} {DescCeCo}", value: $@"{CeCo}"));
+                    cecoList.Add(CeCo);
                 }
+
+                stepContext.Values["AUX"] = cecoList;
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Todos los Centros de Costos", value: $@"Todos"));
+                await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);
 
                 reader.Close();
             }
@@ -112,7 +100,8 @@ namespace Bot.Api.Dialogs
                 await stepContext.Context.SendActivityAsync("To continue to run this bot, please fix the bot source code.", cancellationToken: cancellationToken);
                 await stepContext.Context.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
             }
-            return await stepContext.NextAsync(cancellationToken : cancellationToken);
+
+            return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
         private async Task<DialogTurnResult> PromptForCeCo(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -127,59 +116,64 @@ namespace Bot.Api.Dialogs
 
         private async Task<DialogTurnResult> PrintCuentasUsuario(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            stepContext.Values["CeCo"] = (string)stepContext.Result;
+            if ((string)stepContext.Result == "Todos")
+            {
+                stepContext.Values["CeCo"] = stepContext.Values["AUX"];
+            }
+            else
+            {
+                stepContext.Values["CeCo"] = new List<string>()
+                {
+                    (string)stepContext.Result
+                };
+            }
 
             //Creamos la instancia para la conexion 
             var db = new DatabaseService("sqlserverdac.database.windows.net", "databaseac", "usrteam1", "XW9ZEzoa");
 
-            var table = "users";
+            var society = (string)stepContext.Values["Society"];
+            var ceco = (List<string>)stepContext.Values["CeCo"];
+            var table = society switch
+            {
+                "DAC" => "[DummyDAC]",
+                "AC SAB" => "[Dummy_AC_SAB]",
+                "SAB" => "[Dummy_AC_SAB]",
+                "AC_SAB" => "[Dummy_AC_SAB]",
+                _ => throw new ArgumentException($"Invalid society: {society}")
+            };
             var name = "Angel Manuel Tapia Avitia";
 
-            string query = $@"SELECT NumCuenta, DescCuenta, Sociedad
-                   FROM {table}
-                   WHERE Name = '{name}'";
+            string query = $@"SELECT Desc_PosPre, Pos_Pre
+                               FROM {table}
+                               WHERE Centro_Gestor IN ({string.Join(",", ceco.Select(c => $"'{c}'"))})";
 
             try
             {
                 //Ejecutamos la conexion
                 var reader = db.ExecuteReader(query);
 
+                var cardC = new HeroCard()
+                {
+                    Text = "Escoje de estas cuentas relacionadas a tu o tus Centros de Costo previamente elegidos:",
+                    Buttons = new List<CardAction>()
+                };
+
+                var cuentaList = new List<string>();
+
                 while (reader.Read())
                 {
-                    var NumCuenta = reader["NumCuenta"].ToString();
-                    var DescCuenta = reader["DescCuenta"].ToString();
-                    var Sociedad = reader["Sociedad"].ToString();
+                    var NumCuenta = reader["Pos_Pre"].ToString();
+                    var DescCuenta = reader["Desc_PosPre"].ToString();
+                    var Sociedad = society;
 
-                    var card = new AdaptiveCard(new AdaptiveSchemaVersion(1, 0));
-                    var columnSet = new AdaptiveColumnSet();
-                    var column1 = new AdaptiveColumn() { Width = "20%" };
-                    var column2 = new AdaptiveColumn() { Width = "70%" };
-                    var column3 = new AdaptiveColumn() { Width = "10%" };
+                    cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"{DescCuenta}", value: $@"{NumCuenta}"));
 
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = "Descripcion" });
-                    column1.Items.Add(new AdaptiveTextBlock() { Text = DescCuenta });
-
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = "Numero de cuenta" });
-                    column2.Items.Add(new AdaptiveTextBlock() { Text = NumCuenta});
-
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = "Sociedad" });
-                    column3.Items.Add(new AdaptiveTextBlock() { Text = Sociedad });
-
-                    columnSet.Columns.Add(column1);
-                    columnSet.Columns.Add(column2);
-                    columnSet.Columns.Add(column3);
-
-                    card.Body.Add(columnSet);
-
-                    Attachment attachment = new Attachment()
-                    {
-                        ContentType = AdaptiveCard.ContentType,
-                        Content = card
-                    };
-
-                    var reply = MessageFactory.Attachment(attachment);
-                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                    cuentaList.Add(NumCuenta);
                 }
+                stepContext.Values["AUX"] = cuentaList;
+
+                cardC.Buttons.Add(new CardAction(ActionTypes.ImBack, title: $@"Todas las cuentas", value: $@"Todas"));
+                await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(cardC.ToAttachment()), cancellationToken);
 
                 reader.Close();
             }

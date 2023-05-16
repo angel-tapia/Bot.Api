@@ -279,9 +279,9 @@ namespace Bot.Api.Dialogs
                     column4.Items.Add(new AdaptiveTextBlock() { Text = saldoPresupuestal });
                 }
 
-                columnSet.Columns.Add(columnCeCo);
+                //columnSet.Columns.Add(columnCeCo);
                 columnSet.Columns.Add(column1);
-                columnSet.Columns.Add(columnCuenta);
+                //columnSet.Columns.Add(columnCuenta);
                 columnSet.Columns.Add(column2);
                 columnSet.Columns.Add(column3);
                 columnSet.Columns.Add(column4);
