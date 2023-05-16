@@ -78,8 +78,9 @@ namespace Bot.Api
                                  + parts[1].Substring(0, 1).ToUpper() + parts[1].Substring(1).ToLower();
                         var secondName = parts[3];
                         var email = (string)user.Email;
+                        user.
 
-                        if (!email.EndsWith("@arcacontal.com") || !email.EndsWith("@ext.arcacontal.com"))
+                        if (!name.EndsWith("(OFCORP)"))
                         {
                             await turnContext.SendActivityAsync("No tiene acceso usted a este chatbot.");
                             return;
