@@ -77,7 +77,7 @@ namespace Bot.Api
                         var LastName = parts[0].Substring(0, 1).ToUpper() + parts[0].Substring(1).ToLower()
                                  + parts[1].Substring(0, 1).ToUpper() + parts[1].Substring(1).ToLower();
                         var secondName = parts[3];
-                        var email = user.Email;
+                        var email = (string)user.Email;
 
                         if (!email.EndsWith("@arcacontal.com") || !email.EndsWith("@ext.arcacontal.com"))
                         {
