@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics.Metrics;
 
 namespace Bot.Api
 {
@@ -76,7 +77,13 @@ namespace Bot.Api
                         var LastName = parts[0].Substring(0, 1).ToUpper() + parts[0].Substring(1).ToLower()
                                  + parts[1].Substring(0, 1).ToUpper() + parts[1].Substring(1).ToLower();
                         var secondName = parts[3];
+                        var email = user.Email;
 
+                        if (!email.EndsWith("@arcacontal.com") || !email.EndsWith("@ext.arcacontal.com"))
+                        {
+                            await turnContext.SendActivityAsync("No tiene acceso usted a este chatbot.");
+                            return;
+                        }
 
                         await turnContext.SendActivityAsync(MessageFactory.Text($"<b>Bienvenido al Chatbot Presupuestal {firstName}!</b>"), cancellationToken);
                     }
@@ -115,6 +122,21 @@ namespace Bot.Api
         /// 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
+            try
+            {
+                var user = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.Recipient.Id, cancellationToken);
+                var email = user.Email;
+                
+                if(!email.EndsWith("@arcacontal.com") || !email.EndsWith("@ext.arcacontal.com"))
+                {
+                    await turnContext.SendActivityAsync("No tiene acceso usted a este chatbot.");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                await turnContext.SendActivityAsync(ex.Message, cancellationToken: cancellationToken);
+            }
             var dialogContext = await _dialogSet.CreateContextAsync(turnContext, cancellationToken);
 
             // Use the DialogSet to start the dialog if it hasn't started yet.
