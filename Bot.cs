@@ -124,7 +124,7 @@ namespace Bot.Api
             try
             {
                 var user = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.Recipient.Id, cancellationToken);
-                var email = user.Name;
+                var name = user.Name;
 
                 if (!name.EndsWith("(OFCORP)"))
                 {
