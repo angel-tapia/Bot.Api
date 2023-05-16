@@ -77,8 +77,6 @@ namespace Bot.Api
                         var LastName = parts[0].Substring(0, 1).ToUpper() + parts[0].Substring(1).ToLower()
                                  + parts[1].Substring(0, 1).ToUpper() + parts[1].Substring(1).ToLower();
                         var secondName = parts[3];
-                        var email = (string)user.Email;
-                        user.
 
                         if (!name.EndsWith("(OFCORP)"))
                         {
